@@ -33,7 +33,8 @@ class Environment:
 class Agent:
     def __init__(self, environment):
 
-
+        # agent's belief state
+        self.belief_state = np.full((50,50), 1/2500)
 
 
 
@@ -41,4 +42,3 @@ class Agent:
 if __name__ == "__main__":
     searchanddestroy = Environment()
     jamesbond = Agent(searchanddestroy)
-    
