@@ -36,9 +36,15 @@ class Agent:
         # agent's belief state
         self.belief_state = np.full((50,50), 1/2500)
 
+    # logic for playing game, turn by turn
+    def play(self):
 
+    def updateBelief(self):
 
+    def manhattendistance(self, x1, x2, y1, y2):
 
+        
 if __name__ == "__main__":
     searchanddestroy = Environment()
     jamesbond = Agent(searchanddestroy)
+    jamesbond.play()
