@@ -8,11 +8,11 @@ DISPLAY_MAP = 0
 ## DISPLAY BELIEF GRID
 DISPLAY_BELIEF = 0
 ## SIZE OF ENVIRONMENT
-DIMENSIONS = 10
+DIMENSIONS = 50
 ## SIZE OF BOXES IN ENVIRONMENT
-BOX_SIZE = 40
+BOX_SIZE = 10
 ## TARGET TEXT SIZE (5-32)
-TARGET_TEXT_SIZE = 24
+TARGET_TEXT_SIZE = 10
 ## BELIEF TEXT SIZE (5-32)
 BELIEF_TEXT_SIZE = 10
 ## AGENT TYPE (1-3)
@@ -22,11 +22,18 @@ MOVING_TARGET = 0
 ## SEARCH COUNT
 SEARCH_COUNT = 0
 ## TARGET LOCATION
-target_x = 0
-target_y = 0
+TARGET_X = 0
+TARGET_Y = 0
+## MINIMUM PROBABILITY (ADVANCED AGENT)
+MIN_PROB = 0.01
+## MAX SEARCHES
+MAX_SEARCHES = 10
+## CURRENT CELL
+CUR_CELL = ()
 
-## GENERATE NUMPY GRID FOR ENVIRONMENT
+## GENERATE NUMPY GRID FOR ENVIRONMENT AND BELIEF
 map = np.zeros((DIMENSIONS,DIMENSIONS))
+belief_map = np.zeros((DIMENSIONS,DIMENSIONS))
 
 ## GENERATE NUMPY GRID FOR BELIEF
 belief = np.full((DIMENSIONS,DIMENSIONS), 1/(DIMENSIONS*DIMENSIONS))
@@ -35,7 +42,6 @@ belief = np.full((DIMENSIONS,DIMENSIONS), 1/(DIMENSIONS*DIMENSIONS))
 win = GraphWin(width=DIMENSIONS * BOX_SIZE, height=DIMENSIONS * BOX_SIZE)
 ## SET THE COORDINATES FOR THE WINDOW
 win.setCoords(0, DIMENSIONS * BOX_SIZE, DIMENSIONS * BOX_SIZE, 0)
-
 
 class Environment():
     def __init__(self):
@@ -63,10 +69,10 @@ class Environment():
                     environment_box(i, j, "3")
 
         # randomly choose a cell as the target, doesn't matter where as long as uniformly random
-        target_x = rand.randint(0, DIMENSIONS-1)
-        target_y = rand.randint(0, DIMENSIONS-1)
+        TARGET_X = rand.randint(0, DIMENSIONS-1)
+        TARGET_Y = rand.randint(0, DIMENSIONS-1)
 
-        environment_box(target_x, target_y, "X")
+        environment_box(TARGET_X, TARGET_Y, "X")
 
 ## DRAW ENVIRONMENT
 def environment_box(x, y, txt):
@@ -91,30 +97,25 @@ def environment_box(x, y, txt):
         mySquare.draw(win)
 
 ## UPDATE BELIEF BOX VALUES
-def update_box(x, y, txt):
+def update_box():
+    ## CALC PROBABILITY REDUCTION
+    prob_reduc = belief_map[TARGET_X][TARGET_Y] * (1 - map[TARGET_X][TARGET_Y])
 
-    ## SHOW TARGET LOCATION
-    if txt == "X":
-        label = Text(Point(x * BOX_SIZE + BOX_SIZE / 2, y * BOX_SIZE + BOX_SIZE / 2), txt)
-        label.setFill("red")
-        label.draw(win)
-    ## COLOR GRID
-    else:
-        mySquare = Rectangle(Point(x * BOX_SIZE, y * BOX_SIZE), Point(x * BOX_SIZE + BOX_SIZE, y * BOX_SIZE + BOX_SIZE))
-        if (txt == "0"):
-            mySquare.setFill("white")
-        elif (txt == "1"):
-            mySquare.setFill("tan")
-        elif (txt == "2"):
-            mySquare.setFill("green")
-        elif (txt == "3"):
-            mySquare.setFill("grey")
-        mySquare.draw(win)
+    for i in range(DIMENSIONS):
+        for j in range(DIMENSIONS):
+            ## ON CELL SEARCHED (DONT UPDATE LIKE THE OTHERS)
+            if(TARGET_X==i & TARGET_Y==j):
+                belief_map[TARGET_X][TARGET_Y] = belief_map[TARGET_X][TARGET_Y] - prob_reduc
+            ## INCREASE PROBABILITY BASED ON REDUCED PROBABILITY FROM TARGET CELL
+            else:
+                belief_map[TARGET_X][TARGET_Y] = belief_map[TARGET_X][TARGET_Y] + belief_map[TARGET_X][TARGET_Y] * prob_reduc
+
+
 
 ## CHECK IF TARGET IS IN CELL
 def query_cell(x,y):
     ## TARGET IN CELL
-    if(target_x == x & target_y == y):
+    if(TARGET_X == x & TARGET_Y == y):
         ## TARGET IS IN CELL BUT NOT FOUND DUE TO TERRAIN
         if(map[x][y] <= rand.uniform(0,1)):
             return False
@@ -149,6 +150,32 @@ if __name__ == "__main__":
         ## CREATE ENVIRONMENT
         searchanddestroy = Environment()
 
+        ## RANDOM CELL TO START
+        CUR_CELL_X = rand.randint(0, DIMENSIONS-1)
+        CUR_CELL_Y = rand.randint(0, DIMENSIONS-1)
+
+        ## SEARCH FOR TARGET
+        while(MAX_SEARCHES <= SEARCH_COUNT):
+            ## IF TARGET FOUND
+            if(query_cell(CUR_CELL_X,CUR_CELL_Y)):
+                print("Target Found, Search Count = ", SEARCH_COUNT)
+                break
+            ## PROCEED BASED ON AGENT TYPE
+            else:
+                update_box()
+
+                if(AGENT_TYPE == 1):
+                    print("argmax = ", belief_map.argmax())
+
+                #elif(AGENT_TYPE == 2):
+
+                #elif(AGENT_TYPE == 3):
+
+            SEARCH_COUNT+=1
+
+
+
+        print(belief[1][1])
         ## PAUSE AFTER CLOSING
         win.getMouse()
     except KeyboardInterrupt:
