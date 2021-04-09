@@ -167,8 +167,28 @@ def moveRule1(x, y):
     return maxVals[randnum]
 
 
-def moveRule2():
-    return NotImplementedError
+def generateRule2Matrix():
+    mat = belief.copy()
+
+    for i in range(DIMENSIONS):
+        for j in range(DIMENSIONS):
+            mat[i][j] *= (1 - falseNeg(i, j))
+    return mat
+
+def moveRule2(x, y):
+    # use distance matrix to account for distance
+    distMatrix = distanceMatrix(x, y)
+    logMatrix = 1 + np.log(1 + distMatrix)
+    rule2matrix = generateRule2Matrix() / logMatrix
+
+    maxValx, maxValy = np.unravel_index(np.argmax(rule2matrix, axis=None), belief.rule2matrix)
+    maxVals = []
+    for i in range(DIMENSIONS):
+        for j in range(DIMENSIONS):
+            if belief[i][j] == belief[maxValx][maxValy]:
+                maxVals.append((i, j))
+    randnum = rand.randint(1, len(maxVals)) - 1
+    return maxVals[randnum]
 
 
 # logic for playing game, turn by turn
