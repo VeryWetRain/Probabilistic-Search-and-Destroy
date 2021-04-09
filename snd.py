@@ -125,18 +125,61 @@ def query_cell(x,y):
     else:
         return False
 
-#class Agent:
-    #def __init__(self, environment):
+class Agent:
+    def __init__(self, environment):
 
         # agent's belief state
-        #self.belief_state = np.full((DIMENSIONS,DIMENSIONS), 1/(DIMENSIONS*DIMENSIONS))
+        self.belief_state = np.full((DIMENSIONS,DIMENSIONS), 1/(DIMENSIONS*DIMENSIONS))
+        self.mat = environment
+
+
+    def falseNeg(self, x, y):
+        cell = self.mat[x][y]
+        if cell == 0:
+            return 0.1
+        elif cell == 1:
+            return 0.3
+        elif cell == 2:
+            return 0.7
+        elif cell == 3:
+            return 0.9
+
+
+    def updateBelief(self, row, col):
+        for i in range(DIMENSIONS):
+            for j in range(DIMENSIONS):
+                if row != i or col != j:
+                    belief[i][j] = belief[i][j] + belief[row][col]*(1-self.falseNeg(i, j)) * (belief[i][j]/(1-belief[row][col]))
+        belief[row][col] = belief[row][col] * self.falseNeg(row, col)
+
+
+    def manhattenDistance(self, x1, x2, y1, y2):
+
+    def moveRule1(self):
+
+    def moveRule2(self):
 
     # logic for playing game, turn by turn
-    #def play(self):
-
-    #def updateBelief(self):
-
-    #def manhattendistance(self, x1, x2, y1, y2):
+    def play(self, rule):
+        iter = 0
+        if rule == 1:
+            while True:
+                x, y = self.moveRule1()
+                if query_cell(x, y):
+                    print("Target found, YAY!")
+                    break;
+                else:
+                    self.updateBelief(x, y)
+                iter += 1
+        elif rule == 2:
+            while True:
+                x, y = self.moveRule2()
+                if query_cell(x, y):
+                    print("Target found, YAY!")
+                    break;
+                else:
+                    self.updateBelief(x, y)
+                iter += 1
 
 
 
