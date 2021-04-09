@@ -1,11 +1,44 @@
 import numpy as np
 import random as rand
 import itertools
+from graphics import *
 
-class Environment:
+## DISPLAY MAP
+DISPLAY_MAP = 0
+## DISPLAY BELIEF GRID
+DISPLAY_BELIEF = 0
+## SIZE OF ENVIRONMENT
+DIMENSIONS = 10
+## SIZE OF BOXES IN ENVIRONMENT
+BOX_SIZE = 40
+## TARGET TEXT SIZE (5-32)
+TARGET_TEXT_SIZE = 24
+## BELIEF TEXT SIZE (5-32)
+BELIEF_TEXT_SIZE = 10
+## AGENT TYPE (1-3)
+AGENT_TYPE = 1
+## MOVING TARGET (0-1)
+MOVING_TARGET = 0
+## SEARCH COUNT
+SEARCH_COUNT = 0
+## TARGET LOCATION
+target_x = 0
+target_y = 0
+
+## GENERATE NUMPY GRID FOR ENVIRONMENT
+map = np.zeros((DIMENSIONS,DIMENSIONS))
+
+## GENERATE NUMPY GRID FOR BELIEF
+belief = np.full((DIMENSIONS,DIMENSIONS), 1/(DIMENSIONS*DIMENSIONS))
+
+## GENERATE MAP FOR DISPLAY IN WINDOW
+win = GraphWin(width=DIMENSIONS * BOX_SIZE, height=DIMENSIONS * BOX_SIZE)
+## SET THE COORDINATES FOR THE WINDOW
+win.setCoords(0, DIMENSIONS * BOX_SIZE, DIMENSIONS * BOX_SIZE, 0)
+
+
+class Environment():
     def __init__(self):
-        # generate 50x50 grid
-        self.map = np.zeros((50,50))
 
         # each cell randomly generated as flat, hilly, forest, cave with 0.25 chance each
         # legend for map:
@@ -13,38 +46,117 @@ class Environment:
         # 1: hilly
         # 2: forest
         # 3: cave
-        for i in range(50):
-            for j in range(50):
+        for i in range(DIMENSIONS):
+            for j in range(DIMENSIONS):
                 prob = rand.uniform(0,1)
                 if prob <= 0.25:
-                    self.map[i][j] = 0
+                    map[i][j] = .1
+                    environment_box(i, j, "0")
                 elif prob > 0.25 and prob <= 0.5:
-                    self.map[i][j] = 1
+                    map[i][j] = .3
+                    environment_box(i, j, "1")
                 elif prob > 0.5 and prob <= 0.75:
-                    self.map[i][j] = 2
+                    map[i][j] = .7
+                    environment_box(i, j, "2")
                 else:
-                    self.map[i][j] = 3
+                    map[i][j] = .9
+                    environment_box(i, j, "3")
 
         # randomly choose a cell as the target, doesn't matter where as long as uniformly random
-        x = rand.randint(0, 50)
-        y = rand.randint(0, 50)
-        self.target = (x, y)
+        target_x = rand.randint(0, DIMENSIONS-1)
+        target_y = rand.randint(0, DIMENSIONS-1)
 
-class Agent:
-    def __init__(self, environment):
+        environment_box(target_x, target_y, "X")
+
+## DRAW ENVIRONMENT
+def environment_box(x, y, txt):
+
+    ## SHOW TARGET LOCATION
+    if txt == "X":
+        label = Text(Point(x * BOX_SIZE + BOX_SIZE / 2, y * BOX_SIZE + BOX_SIZE / 2), txt)
+        label.setFill("red")
+        label.setSize(TARGET_TEXT_SIZE)
+        label.draw(win)
+    ## COLOR GRID
+    else:
+        mySquare = Rectangle(Point(x * BOX_SIZE, y * BOX_SIZE), Point(x * BOX_SIZE + BOX_SIZE, y * BOX_SIZE + BOX_SIZE))
+        if (txt == "0"):
+            mySquare.setFill("white")
+        elif (txt == "1"):
+            mySquare.setFill("tan")
+        elif (txt == "2"):
+            mySquare.setFill("green")
+        elif (txt == "3"):
+            mySquare.setFill("grey")
+        mySquare.draw(win)
+
+## UPDATE BELIEF BOX VALUES
+def update_box(x, y, txt):
+
+    ## SHOW TARGET LOCATION
+    if txt == "X":
+        label = Text(Point(x * BOX_SIZE + BOX_SIZE / 2, y * BOX_SIZE + BOX_SIZE / 2), txt)
+        label.setFill("red")
+        label.draw(win)
+    ## COLOR GRID
+    else:
+        mySquare = Rectangle(Point(x * BOX_SIZE, y * BOX_SIZE), Point(x * BOX_SIZE + BOX_SIZE, y * BOX_SIZE + BOX_SIZE))
+        if (txt == "0"):
+            mySquare.setFill("white")
+        elif (txt == "1"):
+            mySquare.setFill("tan")
+        elif (txt == "2"):
+            mySquare.setFill("green")
+        elif (txt == "3"):
+            mySquare.setFill("grey")
+        mySquare.draw(win)
+
+## CHECK IF TARGET IS IN CELL
+def query_cell(x,y):
+    ## TARGET IN CELL
+    if(target_x == x & target_y == y):
+        ## TARGET IS IN CELL BUT NOT FOUND DUE TO TERRAIN
+        if(map[x][y] <= rand.uniform(0,1)):
+            return False
+        ## TARGET IS FOUND
+        else:
+            return True
+    ## TARGET NOT IN CELL
+    else:
+        return False
+
+#class Agent:
+    #def __init__(self, environment):
 
         # agent's belief state
-        self.belief_state = np.full((50,50), 1/2500)
+        #self.belief_state = np.full((DIMENSIONS,DIMENSIONS), 1/(DIMENSIONS*DIMENSIONS))
 
     # logic for playing game, turn by turn
-    def play(self):
+    #def play(self):
 
-    def updateBelief(self):
+    #def updateBelief(self):
 
-    def manhattendistance(self, x1, x2, y1, y2):
+    #def manhattendistance(self, x1, x2, y1, y2):
 
-        
+
+
+
+## MAIN
 if __name__ == "__main__":
-    searchanddestroy = Environment()
-    jamesbond = Agent(searchanddestroy)
-    jamesbond.play()
+    try:
+        #update_box(win, 5, 5, "1")
+
+        ## CREATE ENVIRONMENT
+        searchanddestroy = Environment()
+
+        ## PAUSE AFTER CLOSING
+        win.getMouse()
+    except KeyboardInterrupt:
+        print("Game Over!")
+
+
+    #jamesbond = Agent(searchanddestroy)
+    #jamesbond.play()
+
+    # If no axis mentioned, then it works on the entire array
+    #print(np.argmax(array))
