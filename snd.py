@@ -126,61 +126,72 @@ def query_cell(x,y):
     else:
         return False
 
-class Agent:
-    def __init__(self, environment):
 
-        # agent's belief state
-        self.belief_state = np.full((DIMENSIONS,DIMENSIONS), 1/(DIMENSIONS*DIMENSIONS))
-        self.mat = environment
-
-
-    def falseNeg(self, x, y):
-        cell = self.mat[x][y]
-        if cell == 0:
-            return 0.1
-        elif cell == 1:
-            return 0.3
-        elif cell == 2:
-            return 0.7
-        elif cell == 3:
-            return 0.9
+def falseNeg(x, y):
+    cell = map[x][y]
+    if cell == 0:
+        return 0.1
+    elif cell == 1:
+        return 0.3
+    elif cell == 2:
+        return 0.7
+    elif cell == 3:
+        return 0.9
 
 
-    def updateBelief(self, row, col):
-        for i in range(DIMENSIONS):
-            for j in range(DIMENSIONS):
-                if row != i or col != j:
-                    belief[i][j] = belief[i][j] + belief[row][col]*(1-self.falseNeg(i, j)) * (belief[i][j]/(1-belief[row][col]))
-        belief[row][col] = belief[row][col] * self.falseNeg(row, col)
+def manhattenDistance(x1, x2, y1, y2):
+    return abs(x1 - x2) + abs(y1 - y2)
 
 
-    def manhattenDistance(self, x1, x2, y1, y2):
+def distanceMatrix(x1, y1):
+    mat = np.zeros((DIMENSIONS, DIMENSIONS))
+    for x2 in range(DIMENSIONS):
+        for y2 in range(DIMENSIONS):
+            mat[x2][y2] = manhattenDistance(x1, y1, x2, y2)
+    return mat
 
-    def moveRule1(self):
 
-    def moveRule2(self):
+def moveRule1(x, y):
+    # use distance matrix to account for distance
+    distMatrix = distanceMatrix(x, y)
+    logMatrix = 1 + np.log(1 + distMatrix)
+    rule1matrix = belief / logMatrix
 
-    # logic for playing game, turn by turn
-    def play(self, rule):
-        iter = 0
-        if rule == 1:
-            while True:
-                x, y = self.moveRule1()
-                if query_cell(x, y):
-                    print("Target found, YAY!")
-                    break;
-                else:
-                    self.updateBelief(x, y)
-                iter += 1
-        elif rule == 2:
-            while True:
-                x, y = self.moveRule2()
-                if query_cell(x, y):
-                    print("Target found, YAY!")
-                    break;
-                else:
-                    self.updateBelief(x, y)
-                iter += 1
+    maxValx, maxValy = np.unravel_index(np.argmax(rule1matrix, axis=None), belief.rule1matrix)
+    maxVals = []
+    for i in range(DIMENSIONS):
+        for j in range(DIMENSIONS):
+            if belief[i][j] == belief[maxValx][maxValy]:
+                maxVals.append((i, j))
+    randnum = rand.randint(1, len(maxVals)) - 1
+    return maxVals[randnum]
+
+
+def moveRule2():
+    return NotImplementedError
+
+
+# logic for playing game, turn by turn
+def play(rule):
+    iter = 0
+    if rule == 1:
+        while True:
+            x, y = moveRule1()
+            if query_cell(x, y):
+                print("Target found, YAY!")
+                break;
+            else:
+                updateBelief(x, y)
+            iter += 1
+    elif rule == 2:
+        while True:
+            x, y = moveRule2()
+            if query_cell(x, y):
+                print("Target found, YAY!")
+                break;
+            else:
+                updateBelief(x, y)
+            iter += 1
 
 
 
