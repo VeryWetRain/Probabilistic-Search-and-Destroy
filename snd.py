@@ -151,22 +151,6 @@ def distanceMatrix(x1, y1):
     return mat
 
 
-def moveRule1(x, y):
-    # use distance matrix to account for distance
-    distMatrix = distanceMatrix(x, y)
-    logMatrix = 1 + np.log(1 + distMatrix)
-    rule1matrix = belief / logMatrix
-
-    maxValx, maxValy = np.unravel_index(np.argmax(rule1matrix, axis=None), belief.rule1matrix)
-    maxVals = []
-    for i in range(DIMENSIONS):
-        for j in range(DIMENSIONS):
-            if belief[i][j] == belief[maxValx][maxValy]:
-                maxVals.append((i, j))
-    randnum = rand.randint(1, len(maxVals)) - 1
-    return maxVals[randnum]
-
-
 def generateRule2Matrix():
     mat = belief.copy()
 
@@ -175,13 +159,18 @@ def generateRule2Matrix():
             mat[i][j] *= (1 - falseNeg(i, j))
     return mat
 
-def moveRule2(x, y):
+
+def move(x, y, rule):
     # use distance matrix to account for distance
     distMatrix = distanceMatrix(x, y)
     logMatrix = 1 + np.log(1 + distMatrix)
-    rule2matrix = generateRule2Matrix() / logMatrix
+    if rule == 1:
+        matrix = belief / logMatrix
+    else:
+        matrix = generateRule2Matrix() / logMatrix
 
-    maxValx, maxValy = np.unravel_index(np.argmax(rule2matrix, axis=None), belief.rule2matrix)
+
+    maxValx, maxValy = np.unravel_index(np.argmax(matrix, axis=None), belief.matrix)
     maxVals = []
     for i in range(DIMENSIONS):
         for j in range(DIMENSIONS):
@@ -196,7 +185,7 @@ def play(rule):
     iter = 0
     if rule == 1:
         while True:
-            x, y = moveRule1()
+            x, y = move()
             if query_cell(x, y):
                 print("Target found, YAY!")
                 break;
@@ -205,7 +194,7 @@ def play(rule):
             iter += 1
     elif rule == 2:
         while True:
-            x, y = moveRule2()
+            x, y = move()
             if query_cell(x, y):
                 print("Target found, YAY!")
                 break;
